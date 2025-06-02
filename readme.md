@@ -80,4 +80,33 @@ altarte el primer dato, si varias el numero a 2 o 3 se salta ese numero de datos
 ### not
 - `db.users.find({ age : {$not: { $lte: 20} }})` negacion
 
+### Comparacion de datos
+- `db.users.find({$expr: { $gt: ["$debt", "$balance"]} })` comparacion, de que la deuda sea mayor que el balance de los usuarios. para cceder a las columnas se usa el $ 
+
+## Updates
+- `db.users.updateOne({ age:26},{$set: { age:27 }} )` actualizamos una edad
+
+### Incrementar
+- `db.users.updateOne({ age:26},{$inc: { age: 3 }} )` incrementamos una edad
+
+### renombrar columna
+- `db.users.updateOne({ age:26},{$rename: { name:"firstName" }} )` actualizamos una edad
+
+### quitar columna 
+- `db.users.updateOne({ age:26 }, { $unset: {age:""} })` deshace la coluna
+
+### añade columna 
+- `db.users.updateOne({ age:26 }, { $push: {hobbies:"paint Warhammers"} })` añade la coluna
+
+
+### atualiza muchos
+- `db.users.updateMany({ address:{$exists: true} }, { $unset: { address: ""}} )`
+
+### replace
+- `db.users.replaceOne( { age:30}, {name: "John"})` remplaza lo qu ehaya en el objeto por el objeto. Por lo general se prefiere usar update
+
+
+## Delete
+- `db.users.deleteOne( {name: "John"})` borrar
+- `db.users.deleteMany({ age: {$exists: false}})` borra lo que no tenga eddad en la tabla.
 
