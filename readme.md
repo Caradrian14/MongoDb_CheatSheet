@@ -22,6 +22,9 @@ Consultar los logs: `sudo journalctl -u mongod`
 Cuando s einicial, aparece un 'test' parpadeante que es el que nos indica que estamos en la base de datos test que es la inicial
 - Mostrar las bases de datos: `show dbs`
 - se puede **crear o cambiar** (cuidado con esto) una base de datos usando : `use appdb` o el nombre de la bbdd
+- Limpar la terminal de mongodb: `cls`
+- Salir de la mongodb: `exit`
+- Ver la bd de datos actual `db`
 
 ## Bases de datos VS Colecciones
 En MongoDB, la estructura de almacenamiento de datos se organiza principalmente en bases de datos y colecciones.
@@ -30,3 +33,51 @@ Es un contenedor físico para las colecciones. Es como un espacio donde se agrup
 
 ### Colecciones
 Una colección en MongoDB es un grupo de documentos. Es similar a una tabla en las bases de datos relacionales, pero a diferencia de las tablas, las colecciones no requieren que todos los documentos tengan la misma estructura. Se utilizan para almacenar documentos que tienen un propósito o características similares. Por ejemplo, en una base de datos de blog, podrías tener una colección para los posts y otra para los comentarios. Una de las ventajas de MongoDB es que los documentos dentro de una colección pueden tener diferentes campos. Esto permite una gran flexibilidad en cómo se almacenan y organizan los datos.
+
+## Borrar base de datos
+para borrar `db.dropDatabase()` esto es general para todas las db.
+
+## Inserccion
+- `db.users.insertOne({ name: "John" })` inserta un dato
+No hay esquemas no hay columnas, solo hay documentos que son objetos JSON. S epuede añador lo que quieras
+- `db.users.insertOne({ name: "Sally", age: 19, address: { street: "978 North St"}, hobbies: ["Running"] })` se puede meter de todo basicamente
+- `db.users.insertMany([{name: "Jill""}, {name: "Mike"}])` para insertar multiples
+
+## encontrar datos
+- `db.users.find()` todo
+- `db.users.find().limit(2)` solo dos 
+- `db.users.find().sort({ name: 1}).limit(2)` los entrega ordenados alfabeticamente
+- `db.users.find().sort({ name: -1}).limit(2)` los entrega ordenados alfabeticamente a la inversa
+- `db.users.find().sort({ age: -1 ,name: -1}).limit(2)` añador mas filtros
+- `db.users.find().sort({ age: -1 ,name: -1}).skip(1).limit(2)` skip te permite s
+altarte el primer dato, si varias el numero a 2 o 3 se salta ese numero de datos
+- `db.users.find({ name: "Jill"})` busca exactamente lo que quieres en base a los parametrso que le pidas. Cuidado que diferencia entre strings y ints
+- `db.users.find({ name: "Jill"}, {name: 1, age: 1, _id: 0})` Con este formato lo que hacemos es decirle que nos pase en el formato que queremos, ademas con el _id le decimos que n nos pase el id que tiene forma de hash.
+
+- `db.users.find({ name: "Jill"}, {age: 0})` Con este formato nos devuelve todos los campos menos el que le hemos indicado que no
+
+## Querys Complejos
+- `db.users.find({ name: {$eq: "Jill"}})` nos da lo que le pidamos que sea
+- `db.users.find({ name: {$ne: "Jill"}})` nos da todo lo que le pidamos que NO sea
+- `db.users.find({ age: {$gt: 19}})` nos da todo lo que sea mas grande que lo que le hayamos pedido.
+- `db.users.find({ age: {$gte: 19}})` nos da todo lo que sea mas grande o igual que lo que le hayamos pedido.
+- `db.users.find({ age: {$lte: 19}})` nos da todo lo que sea mas pequeño o igual que lo que le hayamos pedido.
+- `db.users.find({ age: {$lt: 19}})` nos da todo lo que sea mas pequeño que lo que le hayamos pedido.
+- `db.users.find({ name: {$in: ["Paco", "Sally"]}})` nos da lo que este en el rango
+- `db.users.find({ name: {$nin: ["Paco", "Sally"]}})` nos da lo que NO este en el rango
+- `db.users.find({ age: {$gte: 20, $lte:40})` mas de 20 menos de 40
+- `db.users.find({ age: {$gte: 20, $lte:40}, name: "Paco"})` mas de 20 menos de 40
+
+### Existe
+- `db.users.find({ age: {$exist: true}})` nos da lo que exista el campo indicado
+- `db.users.find({ age: {$exist: false}})` nos da lo que no exista el campo indicado
+
+
+### And
+- `db.users.find({ $and: [{age: 26}, { name: "Paco"}]})` aunque no hace falta por qu ehay otras formas de hacerlo
+### or
+- `db.users.find({ $or: [{age: {lte: 26}}, { name: "Paco"}]})` ó
+### not
+- `db.users.find({ age : {$not: { $lte: 20} }})` negacion
+
+
