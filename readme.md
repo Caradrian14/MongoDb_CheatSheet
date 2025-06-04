@@ -110,3 +110,39 @@ altarte el primer dato, si varias el numero a 2 o 3 se salta ese numero de datos
 - `db.users.deleteOne( {name: "John"})` borrar
 - `db.users.deleteMany({ age: {$exists: false}})` borra lo que no tenga eddad en la tabla.
 
+
+
+## Operaciones de Agregación
+Se dedican a procesar multiples documentos y devolver resultados computados. En otrtas palabras procesa los datos y los tranforman en otras cosas de interes.
+
+Si asumimos que tenemos una coleccion de datos:
+```
+{
+  "_id": ObjectId("..."),
+  "producto": "Laptop",
+  "cantidad": 5,
+  "precio": 1000,
+  "fecha": ISODate("2023-10-01T00:00:00Z")
+}
+```
+Y queremos calcular el total de ventas que es cantitad por precio para cada producto.
+Se puede usar la siguiente estructura con un pipline de agregación
+```
+db.ventas.aggregate([
+  {
+    $group: {
+      _id: "$producto",
+      totalVentas: { $sum: { $multiply: ["$cantidad", "$precio"] } }
+    }
+  }
+])
+  
+```
+Que es lo que hace:
+- $group: Esta etapa agrupa los documentos por el campo especificado, en este caso, "$producto".
+- _id: "$producto": Indica que queremos agrupar los documentos por el campo producto.
+- totalVentas: Es un campo calculado que suma el resultado de multiplicar cantidad por precio para cada documento en el grupo.
+
+## Indexaciones en MongoDb
+Un índice en MongoDB es una estructura de datos que almacena una pequeña parte de la colección de datos de una manera que es fácil de traer. Los índices permiten a MongoDB resolver las consultas de manera eficiente.
+
