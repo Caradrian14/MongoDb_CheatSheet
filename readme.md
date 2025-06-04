@@ -146,3 +146,22 @@ Que es lo que hace:
 ## Indexaciones en MongoDb
 Un índice en MongoDB es una estructura de datos que almacena una pequeña parte de la colección de datos de una manera que es fácil de traer. Los índices permiten a MongoDB resolver las consultas de manera eficiente.
 
+### Conceptos de la indexación
+- MongoDB crea automáticamente, y por defecto, un índice único en el campo _id durante la creación de una colección.
+
+- Puedes crear índices en uno o más campos de una colección para mejorar el rendimiento de las consultas. `db.coleccion.createIndex({ nombre: 1 });` 1 indica que es orden ascentiente, -1 es descendiente.
+
+- Tipos de indice
+    - indice unico: Asegura que no haya documentos con valores duplicados en el campo indexado. `db.coleccion.createIndex({ email: 1 }, { unique: true });`
+    - indice compuesto: `db.coleccion.createIndex({ nombre: 1, apellido: -1 });`
+    - indice Multiclave: Índice en un campo que es un array.
+    - Índice de Texto: Para realizar búsquedas de texto en contenido de strings.
+    - Índice Hashed: Índice en el hash de un campo, útil para operaciones de sharding basadas en hash.
+
+### Consideraciones
+Mejora del Rendimiento de las Consultas: Mongo solo escanea pequeñas porciones del codigo y no todo el codigo. Ademas, con los indices se puedes devolver datos ya ordenados por lo que es mas eficiente.
+
+- Hay que tener en cuenta que se realiza un consumo de memoria por cada indice, no queremos pasarnos.
+- Menos velocidad a la hora de escribir, por que hay qu eactualizarlos.
+- Se puede usar el metodo `explain()` y entender como se hacen las consultas. Por ejemplo `db.coleccion.find({ nombre: "Ejemplo" }).explain("executionStats");`
+
