@@ -165,3 +165,81 @@ Mejora del Rendimiento de las Consultas: Mongo solo escanea pequeñas porciones 
 - Menos velocidad a la hora de escribir, por que hay qu eactualizarlos.
 - Se puede usar el metodo `explain()` y entender como se hacen las consultas. Por ejemplo `db.coleccion.find({ nombre: "Ejemplo" }).explain("executionStats");`
 
+
+## Transacciones en MongoDb 
+Permiten ejecutar múltiples operaciones como una única unidad atómica, lo que significa que todas las operaciones dentro de una transacción se completan o ninguna se completa. Esto es útil para mantener la consistencia de los datos en situaciones donde se deben realizar múltiples cambios relacionados en la base de datos.
+
+MongoDB soporta transacciones en conjuntos de réplicas (replica sets) y en implementaciones de sharding.
+
+Tenemos dos colecciones, `cuentas` y `transacciones`, y quieres transferir dinero de una cuenta a otra.
+
+```
+const session = db.getMongo().startSession();
+session.startTransaction();
+
+try {
+    const cuentas = session.getDatabase('tuBaseDeDatos').cuentas;
+    const transacciones = session.getDatabase('tuBaseDeDatos').transacciones;
+
+    // Queremos transferir 100 de la cuenta A a la cuenta B
+    const cuentaA = cuentas.findOne({ nombre: "CuentaA" });
+    const cuentaB = cuentas.findOne({ nombre: "CuentaB" });
+
+    if (!cuentaA || !cuentaB) {
+        throw new Error("Una de las cuentas no existe");
+    }
+
+    if (cuentaA.saldo < 100) {
+        throw new Error("Saldo insuficiente en la CuentaA");
+    }
+
+    // Actualizar saldos
+    cuentas.updateOne(
+        { nombre: "CuentaA" },
+        { $inc: { saldo: -100 } },
+        { session }
+    );
+
+    cuentas.updateOne(
+        { nombre: "CuentaB" },
+        { $inc: { saldo: 100 } },
+        { session }
+    );
+
+    // Registrar la transacción
+    transacciones.insertOne(
+        {
+            de: "CuentaA",
+            a: "CuentaB",
+            cantidad: 100,
+            fecha: new Date()
+        },
+        { session }
+    );
+
+    // Confirmar la transacción
+    session.commitTransaction();
+} catch (error) {
+    // Abortar la transacción en caso de error
+    console.error("Error durante la transacción:", error);
+    session.abortTransaction();
+} finally {
+    session.endSession();
+}
+
+```
+
+### Consideraciones
+- Las transacciones solo están disponibles en conjuntos de réplicas de MongoDB y no en implementaciones standalone. Asegúrarse de que todos los nodos del conjunto de réplicas estén ejecutando una versión de MongoDB que soporte transacciones (versión 4.0 o superior).
+
+- Las transacciones requieren una sesión. Usa startSession para iniciar una sesión y session.startTransaction para comenzar una transacción.
+
+-Todas las operaciones dentro de una transacción deben ser atómicas. Todas las operaciones se completan con éxito o ninguna se aplica.
+
+- Es crucial manejar los errores adecuadamente y abortar la transacción si algo sale mal.
+
+- Las transacciones pueden tener un impacto en el rendimiento, especialmente en sistemas con alta carga de operaciones. Usa transacciones solo cuando sea necesario para mantener la consistencia de los datos.
+
+- Las transacciones tienen un límite de tiempo de ejecución. Si una transacción se ejecuta durante demasiado tiempo, puede ser abortada automáticamente.
+
+- MongoDB utiliza el nivel de aislamiento "snapshot" para las transacciones, lo que significa que las operaciones dentro de una transacción ven un snapshot consistente de los datos desde el inicio de la transacción.
